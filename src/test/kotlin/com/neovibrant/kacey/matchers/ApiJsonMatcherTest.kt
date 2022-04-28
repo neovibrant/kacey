@@ -15,4 +15,21 @@ class ApiJsonMatcherTest {
             "name" To "jim"
         }))
     }
+
+    @Test
+    fun `when a prop fails to match`() {
+        assertThat(json {
+            "id" To "123"
+            "nested object" To json {
+                "name" To "Jim"
+                "location" To "Up north"
+            }
+        }, containsProp(json {
+            "id" To something
+            "nested object" To json {
+                "name" To "Jim"
+                "location" To "Down south"
+            }
+        }))
+    }
 }

@@ -147,12 +147,13 @@ class ApiJsonMatcher {
             return contains()
         }
 
-        private fun Prop.matches(expected: Prop, checkNoExtraProps: Boolean = false): Boolean {
+        private fun Prop.matches(expected: Prop, path: String? = null, checkNoExtraProps: Boolean = false): Boolean {
             val noExtraPropsExpected = checkNoExtraProps || expected.keys.contains(noExtraProps.first)
             val allExpectedMatch = expected
                     .map { (expectedKey, expectedValue) ->
                         val actualValue = this[expectedKey]
-                        when (expectedValue) {
+                        val keyPath = "${if (path == null) "" else "$path > "}$expectedKey"
+                        val matches = when (expectedValue) {
                             is Something -> actualValue != null
                             is Nothing -> actualValue == null
                             noExtraProps.second -> true
@@ -161,7 +162,7 @@ class ApiJsonMatcher {
                                 val actualProp = (actualValue as? Prop) ?: mapOf()
                                 @Suppress("UNCHECKED_CAST")
                                 val expectedProp = expectedValue as Prop
-                                val matchingMap = actualProp.matches(expectedProp, noExtraPropsExpected)
+                                val matchingMap = actualProp.matches(expectedProp, keyPath, noExtraPropsExpected)
                                 matchingMap
                             }
                             is List<*> -> {
@@ -178,6 +179,10 @@ class ApiJsonMatcher {
                             }
                             else -> actualValue == expectedValue
                         }
+                        if (!matches) {
+                            System.err.println("Assertion failed for '${keyPath}': '${actualValue}' did not equal '${expectedValue}'")
+                        }
+                        matches
                     }
                     .all { it }
 
