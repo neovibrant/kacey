@@ -33,7 +33,19 @@ class ApiJsonMatcher {
 
         fun containsProp(expected: Prop): Matcher<Prop?> {
             return object : BaseMatcher<Prop>() {
+                var matchResult: PropMatchResult? = null
+
                 override fun describeTo(description: Description?) {
+                    if (matchResult != null) {
+                        description
+                            ?.appendText("Matching failed for key: ")
+                            ?.appendValue(matchResult?.options?.path)
+                            ?.appendText("\n\tExpected value: ")
+                            ?.appendValue(matchResult?.expected)
+                            ?.appendText("\n\tActual value: ")
+                            ?.appendValue(matchResult?.actual)
+                            ?.appendText("\n")
+                    }
                     description
                             ?.appendText("\nto contain:\n ")
                             ?.appendValue(expected)
@@ -42,7 +54,9 @@ class ApiJsonMatcher {
                 override fun matches(actualValue: Any?): Boolean {
                     @Suppress("UNCHECKED_CAST")
                     val actual = actualValue as? Prop
-                    return actual?.matches(expected) ?: false
+                    val matchResult = PropMatching().match(actual, expected)
+                    this.matchResult = matchResult
+                    return matchResult.matches
                 }
             }
         }
