@@ -2,6 +2,7 @@ package com.neovibrant.kacey.matchers
 
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.NoExtraProps.noExtraProps
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Nothing.nothing
+import com.neovibrant.kacey.matchers.Descriptioner.describe
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -36,43 +37,7 @@ class ApiJsonMatcher {
                 var matchResult: PropMatchResult? = null
 
                 override fun describeTo(description: Description?) {
-                    if (matchResult != null) {
-                        description
-                            ?.appendText("to match expectation, but instead:\n\n***** Failure detail *****\n")
-                        if (matchResult?.noExtraOptionsFailure == true) {
-                            description
-                                ?.appendText("\tMatching failed due to EXTRA PROP(s) at path: ")
-                                ?.appendValue(matchResult?.options?.path?.takeIf { it.isNotBlank() }
-                                    ?: "(root of object)")
-                                ?.appendText("\n\tExtra properties: ")
-                                ?.appendValue(matchResult?.actual)
-                                ?.appendText("\n")
-                        } else if (matchResult?.arraySizeMismatch == true) {
-                            description
-                                ?.appendText("\tMatching failed due to mis-matching array SIZE at path: ")
-                                ?.appendValue(matchResult?.options?.path?.takeIf { it.isNotBlank() }
-                                    ?: "(root of object)")
-                                ?.appendText("\n\tExpected size: ")
-                                ?.appendValue(matchResult?.expected)
-                                ?.appendText("\n\tActual size: ")
-                                ?.appendValue(matchResult?.actual)
-                                ?.appendText("\n")
-                        } else {
-                            description
-                                ?.appendText("\tMatching failed for key: ")
-                                ?.appendValue(matchResult?.options?.path)
-                                ?.appendText("\n\tExpected value: ")
-                                ?.appendValue(matchResult?.expected)
-                                ?.appendText("\n\tActual value: ")
-                                ?.appendValue(matchResult?.actual)
-                                ?.appendText("\n")
-                        }
-                        description
-                            ?.appendText("***** End of detail *****\n")
-                    }
-                    description
-                            ?.appendText("\nFull expectation: ")
-                            ?.appendValue(expected)
+                    describe(description, expected, matchResult)
                 }
 
                 override fun matches(actualValue: Any?): Boolean {
