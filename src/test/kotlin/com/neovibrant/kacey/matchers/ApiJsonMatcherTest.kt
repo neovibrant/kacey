@@ -116,4 +116,91 @@ class ApiJsonMatcherTest {
             "Extra properties: <[expectedExtra]>"
         )
     }
+
+    @Test
+    fun `explanatory error message - nested array`() {
+        assertion {
+            assertThat(json {
+                "id" To "123"
+                "nested array" To listOf(
+                    json {
+                        "name" To "Marry"
+                        "location" To "West"
+                    }, json {
+                        "name" To "Jim"
+                        "location" To "Up north"
+                    }
+                )
+            }, containsProp(json {
+                "id" To something
+                "nested array" To listOf(
+                    json {
+                        "name" To "Marry"
+                        "location" To "West"
+                    }, json {
+                        "name" To "Jim"
+                        "location" To "Down south"
+                    }
+                )
+            }))
+        }.failsWith(
+            "Matching failed for key: \"'nested array'.[1].location\"",
+            "Expected value: \"Down south\"",
+            "Actual value: \"Up north\""
+        )
+    }
+
+    @Test
+    fun `explanatory error message - nested array incomplete`() {
+        assertion {
+            assertThat(json {
+                "id" To "123"
+                "nested array" To listOf(
+                    json {
+                        "name" To "Marry"
+                        "location" To "West"
+                    }
+                )
+            }, containsProp(json {
+                "id" To something
+                "nested array" To listOf(
+                    json {
+                        "name" To "Marry"
+                        "location" To "West"
+                    }, json {
+                        "name" To "Jim"
+                        "location" To "Down south"
+                    }
+                )
+            }))
+        }.failsWith(
+            "Matching failed due to mis-matching array SIZE at path: \"'nested array'\"",
+            "Expected size: <2>",
+            "Actual size: <1>"
+        )
+    }
+
+    @Test
+    fun `explanatory error message - nested array is null`() {
+        assertion {
+            assertThat(json {
+                "id" To "123"
+            }, containsProp(json {
+                "id" To something
+                "nonExistingArray" To listOf(
+                    json {
+                        "name" To "Marry"
+                        "location" To "West"
+                    }, json {
+                        "name" To "Jim"
+                        "location" To "Down south"
+                    }
+                )
+            }))
+        }.failsWith(
+            "Matching failed for key: \"nonExistingArray\"",
+            "Expected value: <[{name=Marry, location=West}, {name=Jim, location=Down south}]>",
+            "Actual value: null"
+        )
+    }
 }

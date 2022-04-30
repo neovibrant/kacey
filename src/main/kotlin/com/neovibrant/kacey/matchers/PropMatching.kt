@@ -33,12 +33,16 @@ internal class PropMatching {
                             val expectedValueList = expectedValue as List<Prop>
 
                             @Suppress("UNCHECKED_CAST")
-                            val actualValueList = actualValue as? List<*>
-                            // TODO calling the matcher directly doesn't give us enough granularity for the index failing
-                            matching(
-                                ApiJsonMatcher.contains(*expectedValueList.toTypedArray())
-                                    .matches(actualValueList)
-                            )
+                            val actualValueList = actualValue as? List<Prop>
+                            if (actualValueList == null) {
+                                matching(actualValue != null)
+                            } else {
+                                containsAllInOrder(
+                                    actual = actualValueList,
+                                    expected = expectedValueList,
+                                    options = options
+                                )
+                            }
                         } else {
                             matching(actualValue == expectedValue)
                         }
@@ -80,6 +84,38 @@ internal class PropMatching {
             matches = matches
         )
     }
+
+    internal fun containsAllInOrder(
+        actual: List<Prop>?,
+        expected: List<Prop>,
+        options: PropMatchOptions = PropMatchOptions()
+    ): PropMatchResult {
+        val actualSize = actual?.size ?: 0
+        val expectedSize = expected.size
+        val expectedAndActualHaveSameSize = actualSize == expectedSize
+        val allMatchInOrderResults = {
+            actual
+                ?.mapIndexed { index, actualProp ->
+                    val expectedProp = expected[index]
+                    match(actualProp, expectedProp, options.appendingPath("[$index]"))
+                }
+                ?: emptyList()
+        }
+
+        return if (expectedAndActualHaveSameSize) {
+            allMatchInOrderResults()
+                .firstOrNull { !it.matches }
+                ?: matchingResultFor(actual, expected, options)(true)
+        } else {
+            PropMatchResult(
+                actual = actualSize,
+                expected = expectedSize,
+                options = options,
+                matches = false,
+                arraySizeMismatch = true
+            )
+        }
+    }
 }
 
 
@@ -87,8 +123,9 @@ internal data class PropMatchResult(
     val actual: Any?,
     val expected: Any?,
     val options: PropMatchOptions,
+    val matches: Boolean,
     val noExtraOptionsFailure: Boolean = false,
-    val matches: Boolean
+    val arraySizeMismatch: Boolean = false
 )
 
 internal data class PropMatchOptions(

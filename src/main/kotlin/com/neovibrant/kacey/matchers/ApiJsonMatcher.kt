@@ -42,8 +42,19 @@ class ApiJsonMatcher {
                         if (matchResult?.noExtraOptionsFailure == true) {
                             description
                                 ?.appendText("\tMatching failed due to EXTRA PROP(s) at path: ")
-                                ?.appendValue(matchResult?.options?.path?.takeIf { it.isNotBlank() } ?: "(root of object)")
+                                ?.appendValue(matchResult?.options?.path?.takeIf { it.isNotBlank() }
+                                    ?: "(root of object)")
                                 ?.appendText("\n\tExtra properties: ")
+                                ?.appendValue(matchResult?.actual)
+                                ?.appendText("\n")
+                        } else if (matchResult?.arraySizeMismatch == true) {
+                            description
+                                ?.appendText("\tMatching failed due to mis-matching array SIZE at path: ")
+                                ?.appendValue(matchResult?.options?.path?.takeIf { it.isNotBlank() }
+                                    ?: "(root of object)")
+                                ?.appendText("\n\tExpected size: ")
+                                ?.appendValue(matchResult?.expected)
+                                ?.appendText("\n\tActual size: ")
                                 ?.appendValue(matchResult?.actual)
                                 ?.appendText("\n")
                         } else {
