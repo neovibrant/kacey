@@ -47,7 +47,7 @@ class ApiJsonMatcher {
                             ?.appendText("\n")
                     }
                     description
-                            ?.appendText("\nto contain:\n ")
+                            ?.appendText("\nFull expectation: ")
                             ?.appendValue(expected)
                 }
 

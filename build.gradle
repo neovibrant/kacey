@@ -38,4 +38,5 @@ dependencies {
 	compile('org.jetbrains.kotlin:kotlin-stdlib-jdk8')
 	compile('org.jetbrains.kotlin:kotlin-reflect')
 	compile('junit:junit:4.12')
+	testImplementation('org.assertj:assertj-core:3.22.0')
 }

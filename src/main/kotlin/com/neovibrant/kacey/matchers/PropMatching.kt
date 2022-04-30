@@ -45,21 +45,19 @@ internal class PropMatching {
                 matches
             }
 
-        val firstMatchFailure = allMatchResults.firstOrNull { !it.matches }
-
-        return if (firstMatchFailure != null) {
-            firstMatchFailure
-        } else if (noExtraPropsExpected) {
-            matchingResultFor(actual, expected, options.appendingPath("<EXTRA_PROPS>"))(
-                (actual?.keys?.size ?: 0) == expected.keys
-                .asSequence()
-                .filter { it != ApiJsonMatcher.NoExtraProps.noExtraProps.first }
-                .filter { expected[it] != ApiJsonMatcher.Nothing.nothing }
-                .count()
-            )
-        } else {
-            matchingResultFor(actual, expected, options)(true)
-        }
+        return allMatchResults
+            .firstOrNull { !it.matches }
+            ?: if (noExtraPropsExpected) {
+                matchingResultFor(actual, expected, options.appendingPath("<EXTRA_PROPS>"))(
+                    (actual?.keys?.size ?: 0) == expected.keys
+                        .asSequence()
+                        .filter { it != ApiJsonMatcher.NoExtraProps.noExtraProps.first }
+                        .filter { expected[it] != ApiJsonMatcher.Nothing.nothing }
+                        .count()
+                )
+            } else {
+                matchingResultFor(actual, expected, options)(true)
+            }
     }
 
     private fun matchingResultFor(
