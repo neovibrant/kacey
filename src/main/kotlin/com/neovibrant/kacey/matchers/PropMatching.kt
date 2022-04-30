@@ -10,7 +10,7 @@ internal class PropMatching {
             .map { (expectedKey, expectedValue) ->
                 val actualValue = actual?.get(expectedKey)
                 val options = options.appendingPath(expectedKey)
-                val matching = matchingResultFor(actual, expected, options)
+                val matching = matchingResultFor(actualValue, expectedValue, options)
                 val matches = when (expectedValue) {
                     is ApiJsonMatcher.Something -> matching(actualValue != null)
                     is ApiJsonMatcher.Nothing -> matching(actualValue == null)
@@ -63,8 +63,8 @@ internal class PropMatching {
     }
 
     private fun matchingResultFor(
-        actual: Prop?,
-        expected: Prop?,
+        actual: Any?,
+        expected: Any?,
         options: PropMatchOptions
     ): (Boolean) -> PropMatchResult = { matches ->
         PropMatchResult(
@@ -77,7 +77,7 @@ internal class PropMatching {
 }
 
 
-internal data class PropMatchResult(val actual: Prop?, val expected: Prop?, val options: PropMatchOptions, val matches: Boolean)
+internal data class PropMatchResult(val actual: Any?, val expected: Any?, val options: PropMatchOptions, val matches: Boolean)
 
 internal data class PropMatchOptions(val paths: List<String> = emptyList(), val checkNoExtraProps: Boolean = false) {
     fun appendingPath(path: String): PropMatchOptions {
@@ -87,7 +87,7 @@ internal data class PropMatchOptions(val paths: List<String> = emptyList(), val 
     val path: String
         get(): String {
             return paths.joinToString(".") {
-                if (it.contains("\\s+")) {
+                if (it.contains("\\s".toRegex())) {
                     "'$it'"
                 } else {
                     it
