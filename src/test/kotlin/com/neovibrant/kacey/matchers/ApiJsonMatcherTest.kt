@@ -79,20 +79,41 @@ class ApiJsonMatcherTest {
         )
     }
 
-//    @Test
-//    fun `explanatory error message - extra props`() {
-//        assertion {
-//            assertThat(json {
-//                "id" To "123"
-//                "expectedExtra" To "extra"
-//            }, containsProp(json {
-//                "id" To something
-//                noExtraProps()
-//            }))
-//        }.failsWith(
-//            "Matching failed for key: \"unexpected\"",
-//            "Expected value: <nothing>",
-//            "Actual value: \"123\""
-//        )
-//    }
+    @Test
+    fun `explanatory error message - extra props`() {
+        assertion {
+            assertThat(json {
+                "id" To "123"
+                "expectedExtra" To "extra"
+            }, containsProp(json {
+                "id" To something
+                noExtraProps()
+            }))
+        }.failsWith(
+            "Matching failed due to EXTRA PROP(s) at path: \"(root of object)\"",
+            "Extra properties: <[expectedExtra]>"
+        )
+    }
+
+    @Test
+    fun `explanatory error message - extra props is nested`() {
+        assertion {
+            assertThat(json {
+                "id" To "123"
+                "nestedObject" To json {
+                    "expected" To 1
+                    "expectedExtra" To "extra"
+                }
+            }, containsProp(json {
+                "id" To something
+                "nestedObject" To json {
+                    "expected" To 1
+                }
+                noExtraProps()
+            }))
+        }.failsWith(
+            "Matching failed due to EXTRA PROP(s) at path: \"nestedObject\"",
+            "Extra properties: <[expectedExtra]>"
+        )
+    }
 }
