@@ -52,42 +52,18 @@ class ApiJsonMatcher {
 
         fun contains(vararg expected: Prop): Matcher<List<Prop>?> {
             return object : BaseMatcher<List<Prop>>() {
-                private var orderMismatch = false
+                var matchResult: PropMatchResult? = null
 
                 override fun describeTo(description: Description?) {
-                    description
-                            ?.appendValue(expected)
-                            ?.appendText("\nto contain all in order.\n ")
+                    describe(description, expected, matchResult)
                 }
 
                 override fun matches(actualValue: Any?): Boolean {
                     @Suppress("UNCHECKED_CAST")
                     val actual = actualValue as? List<Prop>
-
-                    val expectedAndActualHaveSameSize = (actual?.size ?: 0) == expected.size
-                    val allMatchInOrder = {
-                        actual
-                                ?.mapIndexed { index, actualProp ->
-                                    val expectedProp = expected[index]
-                                    actualProp.matches(expectedProp)
-                                }
-                                ?.all { it }
-                                ?: false
-                    }
-                    val result = expectedAndActualHaveSameSize && allMatchInOrder()
-                    if (!result) {
-                        orderMismatch = allMatchIgnoringOrder(actualValue, expected)
-                    }
-                    return result
-                }
-
-                override fun describeMismatch(item: Any?, description: Description?) {
-                    if (orderMismatch) {
-                        description?.appendText("although they were equal, they were in the WRONG ORDER: ")?.appendValue(item)
-                    } else {
-                        super.describeMismatch(item, description)
-                    }
-                    orderMismatch = false
+                    val matchResult = PropMatching().containsAllInOrder(actual, expected.toList())
+                    this.matchResult = matchResult
+                    return matchResult.matches
                 }
             }
         }

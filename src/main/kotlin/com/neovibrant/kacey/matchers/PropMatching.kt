@@ -103,9 +103,20 @@ internal class PropMatching {
         }
 
         return if (expectedAndActualHaveSameSize) {
-            allMatchInOrderResults()
+            val result = allMatchInOrderResults()
                 .firstOrNull { !it.matches }
                 ?: matchingResultFor(actual, expected, options)(true)
+            if (!result.matches && containsAllIgnoringOrder(actual, expected, options).matches) {
+                PropMatchResult(
+                    actual = actual,
+                    expected = expected,
+                    options = options,
+                    matches = false,
+                    wrongOrder = true
+                )
+            } else {
+                result
+            }
         } else {
             PropMatchResult(
                 actual = actualSize,
@@ -114,6 +125,72 @@ internal class PropMatching {
                 matches = false,
                 arraySizeMismatch = true
             )
+        }
+    }
+
+    internal fun containsAllIgnoringOrder(
+        actual: List<Prop>?,
+        expected: List<Prop>,
+        options: PropMatchOptions = PropMatchOptions()
+    ): PropMatchResult {
+        val expectedAndActualHaveSameSize = (actual?.size ?: 0) == expected.size
+
+        return if (!expectedAndActualHaveSameSize) {
+            PropMatchResult(
+                actual = actual?.size ?: 0,
+                expected = expected.size,
+                options = options,
+                matches = false,
+                arraySizeMismatch = true
+            )
+        } else {
+            val nonMatchingActual = actual
+                ?.mapIndexedNotNull { index, actualProp ->
+                    expected
+                        .none { expectedProp ->
+                            match(actualProp, expectedProp, options).matches
+                        }
+                        .takeIf { it }
+                        ?.let {
+                            PropMatchResult(
+                                actual = actualProp,
+                                expected = null,
+                                options = options.appendingPath("[$index]"),
+                                matches = false
+                            )
+                        }
+                }
+                ?.firstOrNull()
+            val nonMatchingExpected = expected
+                .mapIndexedNotNull { index, expectedProp ->
+                    (actual
+                        ?.none { actualProp ->
+                            match(actualProp, expectedProp, options).matches
+                        } ?: true)
+                        .takeIf { it }
+                        ?.let {
+                            PropMatchResult(
+                                actual = null,
+                                expected = expectedProp,
+                                options = options.appendingPath("[$index]"),
+                                matches = false
+                            )
+                        }
+                }
+                .firstOrNull()
+
+            if (nonMatchingExpected != null) {
+                nonMatchingExpected
+            } else if (nonMatchingActual != null) {
+                nonMatchingActual
+            } else {
+                PropMatchResult(
+                    actual = actual,
+                    expected = expected,
+                    options = options,
+                    matches = true
+                )
+            }
         }
     }
 }
@@ -125,7 +202,8 @@ internal data class PropMatchResult(
     val options: PropMatchOptions,
     val matches: Boolean,
     val noExtraOptionsFailure: Boolean = false,
-    val arraySizeMismatch: Boolean = false
+    val arraySizeMismatch: Boolean = false,
+    val wrongOrder: Boolean = false
 )
 
 internal data class PropMatchOptions(

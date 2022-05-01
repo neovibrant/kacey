@@ -12,6 +12,8 @@ internal object Descriptioner {
                 describeNoExtraOptions(description, matchResult)
             } else if (matchResult.arraySizeMismatch) {
                 describeArraySizeMismatch(description, matchResult)
+            } else if (matchResult.wrongOrder) {
+                describeWrongOrder(description, matchResult)
             } else {
                 describeFailure(description, matchResult)
             }
@@ -48,6 +50,14 @@ internal object Descriptioner {
             ?.appendValue(matchResult.expected)
             ?.appendText("\n\tActual size: ")
             ?.appendValue(matchResult.actual)
+            ?.appendText("\n")
+    }
+
+    private fun describeWrongOrder(description: Description?, matchResult: PropMatchResult) {
+        description
+            ?.appendText("\tMatching failed due to WRONG ORDER of values at path: ")
+            ?.appendValue(matchResult.options.path.takeIf { it.isNotBlank() }
+                ?: "(root of object)")
             ?.appendText("\n")
     }
 
