@@ -154,7 +154,7 @@ internal class PropMatching {
                         ?.let {
                             PropMatchResult(
                                 actual = actualProp,
-                                expected = null,
+                                expected = "<Nothing that matched in any order>",
                                 options = options.appendingPath("[$index]"),
                                 matches = false
                             )
@@ -170,7 +170,7 @@ internal class PropMatching {
                         .takeIf { it }
                         ?.let {
                             PropMatchResult(
-                                actual = null,
+                                actual = "<Nothing that matched in any order>",
                                 expected = expectedProp,
                                 options = options.appendingPath("[$index]"),
                                 matches = false

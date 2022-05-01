@@ -68,6 +68,24 @@ class ApiJsonMatcher {
             }
         }
 
+        fun containsInAnyOrder(vararg expected: Prop): Matcher<List<Prop>?> {
+            return object : BaseMatcher<List<Prop>>() {
+                var matchResult: PropMatchResult? = null
+
+                override fun describeTo(description: Description?) {
+                    describe(description, expected, matchResult)
+                }
+
+                override fun matches(actualValue: Any?): Boolean {
+                    @Suppress("UNCHECKED_CAST")
+                    val actual = actualValue as? List<Prop>
+                    val matchResult = PropMatching().containsAllIgnoringOrder(actual, expected.toList())
+                    this.matchResult = matchResult
+                    return matchResult.matches
+                }
+            }
+        }
+
         fun containsAtLeast(vararg expected: Prop): Matcher<List<Prop>?> {
             return object : BaseMatcher<List<Prop>>() {
                 override fun describeTo(description: Description?) {
@@ -86,40 +104,6 @@ class ApiJsonMatcher {
                     }
                 }
             }
-        }
-
-        fun containsInAnyOrder(vararg expected: Prop): Matcher<List<Prop>?> {
-            return object : BaseMatcher<List<Prop>>() {
-                override fun describeTo(description: Description?) {
-                    description
-                            ?.appendText("\nto contain all:\n ")
-                            ?.appendValue(expected)
-                }
-
-                override fun matches(actualValue: Any?): Boolean {
-                    return allMatchIgnoringOrder(actualValue, expected)
-                }
-            }
-        }
-
-        private fun allMatchIgnoringOrder(actualValue: Any?, expected: Array<out Prop>): Boolean {
-            @Suppress("UNCHECKED_CAST")
-            val actual = actualValue as? List<Prop>
-            val eachActualMatchesAnExpected = actual?.all { actualProp ->
-                expected.any { expectedProp ->
-                    actualProp.matches(expectedProp)
-                }
-            } ?: false
-            val eachExpectedMatchesAnActual = expected.all { expectedProp ->
-                actual?.any { actualProp ->
-                    actualProp.matches(expectedProp)
-                } ?: false
-            }
-            val expectedAndActualHaveSameSize = (actual?.size ?: 0) == expected.size
-
-            return eachActualMatchesAnExpected
-                    && eachExpectedMatchesAnActual
-                    && expectedAndActualHaveSameSize
         }
 
         fun isEmpty(): Matcher<List<Prop>?> {
