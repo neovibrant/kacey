@@ -1,7 +1,6 @@
 package com.neovibrant.kacey.matchers
 
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.NoExtraProps.noExtraProps
-import com.neovibrant.kacey.matchers.ApiJsonMatcher.Nothing.nothing
 import com.neovibrant.kacey.matchers.Descriptioner.describe
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
@@ -88,78 +87,24 @@ class ApiJsonMatcher {
 
         fun containsAtLeast(vararg expected: Prop): Matcher<List<Prop>?> {
             return object : BaseMatcher<List<Prop>>() {
+                var matchResult: PropMatchResult? = null
+
                 override fun describeTo(description: Description?) {
-                    description
-                            ?.appendText("\nto contain some:\n ")
-                            ?.appendValue(expected)
+                    describe(description, expected, matchResult)
                 }
 
                 override fun matches(actualValue: Any?): Boolean {
                     @Suppress("UNCHECKED_CAST")
                     val actual = actualValue as? List<Prop>
-                    return expected.all { expectedProp ->
-                        actual?.any { actualProp ->
-                            actualProp.matches(expectedProp)
-                        } ?: false
-                    }
+                    val matchResult = PropMatching().containsAtLeast(actual, expected.toList())
+                    this.matchResult = matchResult
+                    return matchResult.matches
                 }
             }
         }
 
         fun isEmpty(): Matcher<List<Prop>?> {
             return contains()
-        }
-
-        private fun Prop.matches(expected: Prop, path: String? = null, checkNoExtraProps: Boolean = false): Boolean {
-            val noExtraPropsExpected = checkNoExtraProps || expected.keys.contains(noExtraProps.first)
-            val allExpectedMatch = expected
-                    .map { (expectedKey, expectedValue) ->
-                        val actualValue = this[expectedKey]
-                        val keyPath = "${if (path == null) "" else "$path > "}$expectedKey"
-                        val matches = when (expectedValue) {
-                            is Something -> actualValue != null
-                            is Nothing -> actualValue == null
-                            noExtraProps.second -> true
-                            is Map<*, *> -> {
-                                @Suppress("UNCHECKED_CAST")
-                                val actualProp = (actualValue as? Prop) ?: mapOf()
-                                @Suppress("UNCHECKED_CAST")
-                                val expectedProp = expectedValue as Prop
-                                val matchingMap = actualProp.matches(expectedProp, keyPath, noExtraPropsExpected)
-                                matchingMap
-                            }
-                            is List<*> -> {
-                                val listOfProps = expectedValue.all { it is Map<*, *> }
-                                if (listOfProps) {
-                                    @Suppress("UNCHECKED_CAST")
-                                    val expectedValueList = expectedValue as List<Prop>
-                                    @Suppress("UNCHECKED_CAST")
-                                    val actualValueList = actualValue as? List<*>
-                                    contains(*expectedValueList.toTypedArray()).matches(actualValueList)
-                                } else {
-                                    actualValue == expectedValue
-                                }
-                            }
-                            else -> actualValue == expectedValue
-                        }
-                        if (!matches) {
-                            System.err.println("Assertion failed for '${keyPath}': '${actualValue}' did not equal '${expectedValue}'")
-                        }
-                        matches
-                    }
-                    .all { it }
-
-            val sizeMatchesIfRequired = if (allExpectedMatch && noExtraPropsExpected) {
-                this.keys.size == expected.keys
-                        .asSequence()
-                        .filter { it != noExtraProps.first }
-                        .filter { expected[it] != nothing }
-                        .count()
-            } else {
-                true
-            }
-
-            return allExpectedMatch && sizeMatchesIfRequired
         }
     }
 

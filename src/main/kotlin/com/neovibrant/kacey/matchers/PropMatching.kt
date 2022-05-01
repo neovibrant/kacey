@@ -193,6 +193,36 @@ internal class PropMatching {
             }
         }
     }
+
+    internal fun containsAtLeast(
+        actual: List<Prop>?,
+        expected: List<Prop>,
+        options: PropMatchOptions = PropMatchOptions()
+    ): PropMatchResult {
+        return expected
+            .mapIndexedNotNull { index, expectedProp ->
+                (actual
+                    ?.none { actualProp ->
+                        match(actualProp, expectedProp, options).matches
+                    } ?: true)
+                    .takeIf { it }
+                    ?.let {
+                        PropMatchResult(
+                            actual = "<Nothing that matched in any order>",
+                            expected = expectedProp,
+                            options = options.appendingPath("[$index]"),
+                            matches = false
+                        )
+                    }
+            }
+            .firstOrNull()
+            ?: PropMatchResult(
+                actual = actual,
+                expected = expected,
+                options = options,
+                matches = true
+            )
+    }
 }
 
 
