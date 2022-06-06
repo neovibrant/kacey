@@ -13,7 +13,7 @@ val Prop.id: String
 
 
 class ApiJsonMatcher {
-    private val fields: MutableMap<String, Any?> = mutableMapOf()
+    val fields: MutableMap<String, Any?> = mutableMapOf()
 
     infix fun String.To(that: Any?) {
         fields[this] = that
