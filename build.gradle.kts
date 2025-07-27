@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.neovibrant.kacey"
-version = "1.2.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -33,7 +33,7 @@ kotlin {
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 ktlint {
