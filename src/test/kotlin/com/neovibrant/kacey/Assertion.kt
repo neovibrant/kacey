@@ -3,7 +3,9 @@ package com.neovibrant.kacey
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 
-class Assertion(val assertion: () -> Unit) {
+class Assertion(
+    val assertion: () -> Unit,
+) {
     fun failsWith(vararg messages: String) {
         assertThat(messages)
             .describedAs("failsWith(..) requires at least one argument")
@@ -24,5 +26,5 @@ class Assertion(val assertion: () -> Unit) {
         fun assertion(assertion: () -> Unit) = Assertion(assertion = assertion)
     }
 
-    class ExpectedAssertionError: AssertionError()
+    class ExpectedAssertionError : AssertionError()
 }

@@ -10,9 +10,14 @@ class ApiJsonMatcherTest {
     @Test
     fun `prop is matched by properties`() {
         val prop: Prop = mapOf("id" to 123, "name" to "jim")
-        assertThat(prop, containsProp(json {
-            "id" To something
-            "name" To "jim"
-        }))
+        assertThat(
+            prop,
+            containsProp(
+                json {
+                    "id" To something
+                    "name" To "jim"
+                },
+            ),
+        )
     }
 }

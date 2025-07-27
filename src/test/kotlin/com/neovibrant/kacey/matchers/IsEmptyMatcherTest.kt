@@ -15,17 +15,23 @@ class IsEmptyMatcherTest {
     @Test
     fun `is empty - contains items`() {
         assertion {
-            assertThat(listOf(json {
-                "id" To 123
-                "name" To "Mary"
-            }, json {
-                "id" To 456
-                "name" To "Jake"
-            }), isEmpty())
+            assertThat(
+                listOf(
+                    json {
+                        "id" To 123
+                        "name" To "Mary"
+                    },
+                    json {
+                        "id" To 456
+                        "name" To "Jake"
+                    },
+                ),
+                isEmpty(),
+            )
         }.failsWith(
             "Matching failed due to mis-matching array SIZE at path: \"(root of object)\"",
             "Expected size: <0>",
-            "Actual size: <2>"
+            "Actual size: <2>",
         )
     }
 }

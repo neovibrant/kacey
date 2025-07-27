@@ -11,10 +11,10 @@ typealias Prop = Map<String, Any?>
 val Prop.id: String
     get() = this["id"] as String
 
-
 class ApiJsonMatcher {
     val fields: MutableMap<String, Any?> = mutableMapOf()
 
+    @Suppress("ktlint:standard:function-naming")
     infix fun String.To(that: Any?) {
         fields[this] = that
     }
@@ -103,9 +103,7 @@ class ApiJsonMatcher {
             }
         }
 
-        fun isEmpty(): Matcher<List<Prop>?> {
-            return contains()
-        }
+        fun isEmpty(): Matcher<List<Prop>?> = contains()
     }
 
     object NoExtraProps {
@@ -115,16 +113,12 @@ class ApiJsonMatcher {
     object Something {
         val something = Something
 
-        override fun toString(): String {
-            return "something"
-        }
+        override fun toString(): String = "something"
     }
 
     object Nothing {
         val nothing = Nothing
 
-        override fun toString(): String {
-            return "nothing"
-        }
+        override fun toString(): String = "nothing"
     }
 }

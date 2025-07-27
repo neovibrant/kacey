@@ -3,8 +3,11 @@ package com.neovibrant.kacey.matchers
 import org.hamcrest.Description
 
 internal object Descriptioner {
-
-    internal fun describe(description: Description?, expected: Any?, matchResult: PropMatchResult?) {
+    internal fun describe(
+        description: Description?,
+        expected: Any?,
+        matchResult: PropMatchResult?,
+    ) {
         if (matchResult != null) {
             description
                 ?.appendText("to match expectation, but instead:\n\n***** Failure detail *****\n")
@@ -27,43 +30,49 @@ internal object Descriptioner {
 
     private fun describeNoExtraOptions(
         description: Description?,
-        matchResult: PropMatchResult
+        matchResult: PropMatchResult,
     ) {
         description
             ?.appendText("\tMatching failed due to EXTRA PROP(s) at path: ")
-            ?.appendValue(matchResult.options.path.takeIf { it.isNotBlank() }
-                ?: "(root of object)")
-            ?.appendText("\n\tExtra properties: ")
+            ?.appendValue(
+                matchResult.options.path.takeIf { it.isNotBlank() }
+                    ?: "(root of object)",
+            )?.appendText("\n\tExtra properties: ")
             ?.appendValue(matchResult.actual)
             ?.appendText("\n")
     }
 
     private fun describeArraySizeMismatch(
         description: Description?,
-        matchResult: PropMatchResult
+        matchResult: PropMatchResult,
     ) {
         description
             ?.appendText("\tMatching failed due to mis-matching array SIZE at path: ")
-            ?.appendValue(matchResult.options.path.takeIf { it.isNotBlank() }
-                ?: "(root of object)")
-            ?.appendText("\n\tExpected size: ")
+            ?.appendValue(
+                matchResult.options.path.takeIf { it.isNotBlank() }
+                    ?: "(root of object)",
+            )?.appendText("\n\tExpected size: ")
             ?.appendValue(matchResult.expected)
             ?.appendText("\n\tActual size: ")
             ?.appendValue(matchResult.actual)
             ?.appendText("\n")
     }
 
-    private fun describeWrongOrder(description: Description?, matchResult: PropMatchResult) {
+    private fun describeWrongOrder(
+        description: Description?,
+        matchResult: PropMatchResult,
+    ) {
         description
             ?.appendText("\tMatching failed due to WRONG ORDER of values at path: ")
-            ?.appendValue(matchResult.options.path.takeIf { it.isNotBlank() }
-                ?: "(root of object)")
-            ?.appendText("\n")
+            ?.appendValue(
+                matchResult.options.path.takeIf { it.isNotBlank() }
+                    ?: "(root of object)",
+            )?.appendText("\n")
     }
 
     private fun describeFailure(
         description: Description?,
-        matchResult: PropMatchResult
+        matchResult: PropMatchResult,
     ) {
         description
             ?.appendText("\tMatching failed for key: ")
