@@ -20,9 +20,9 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.hamcrest:hamcrest:2.2")
-    implementation("junit:junit:4.12")
-    testImplementation("org.assertj:assertj-core:3.22.0")
+    implementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
 }
 
 kotlin {
@@ -32,9 +32,9 @@ kotlin {
     }
 }
 
-// tasks.withType<Test> {
-// 	useJUnitPlatform()
-// }
+tasks.withType<Test> {
+	useJUnitPlatform()
+}
 
 ktlint {
     version.set("1.5.0")

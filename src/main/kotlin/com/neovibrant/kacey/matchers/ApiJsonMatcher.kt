@@ -2,9 +2,8 @@ package com.neovibrant.kacey.matchers
 
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.NoExtraProps.noExtraProps
 import com.neovibrant.kacey.matchers.Descriptioner.describe
-import org.hamcrest.BaseMatcher
-import org.hamcrest.Description
-import org.hamcrest.Matcher
+import io.kotest.matchers.Matcher
+import io.kotest.matchers.MatcherResult
 
 typealias Prop = Map<String, Any?>
 
@@ -32,74 +31,46 @@ class ApiJsonMatcher {
         }
 
         fun containsProp(expected: Prop): Matcher<Prop?> {
-            return object : BaseMatcher<Prop>() {
-                var matchResult: PropMatchResult? = null
-
-                override fun describeTo(description: Description?) {
-                    describe(description, expected, matchResult)
-                }
-
-                override fun matches(actualValue: Any?): Boolean {
-                    @Suppress("UNCHECKED_CAST")
-                    val actual = actualValue as? Prop
-                    val matchResult = PropMatching().match(actual, expected)
-                    this.matchResult = matchResult
-                    return matchResult.matches
-                }
+            return Matcher { actual ->
+                val matchResult = PropMatching().match(actual, expected)
+                MatcherResult(
+                    matchResult.matches,
+                    { describe(expected, matchResult) },
+                    { describe(expected, matchResult) }
+                )
             }
         }
 
         fun contains(vararg expected: Prop): Matcher<List<Prop>?> {
-            return object : BaseMatcher<List<Prop>>() {
-                var matchResult: PropMatchResult? = null
-
-                override fun describeTo(description: Description?) {
-                    describe(description, expected, matchResult)
-                }
-
-                override fun matches(actualValue: Any?): Boolean {
-                    @Suppress("UNCHECKED_CAST")
-                    val actual = actualValue as? List<Prop>
-                    val matchResult = PropMatching().containsAllInOrder(actual, expected.toList())
-                    this.matchResult = matchResult
-                    return matchResult.matches
-                }
+            return Matcher { actual ->
+                val matchResult = PropMatching().containsAllInOrder(actual, expected.toList())
+                MatcherResult(
+                    matchResult.matches,
+                    { describe(expected, matchResult) },
+                    { describe(expected, matchResult) }
+                )
             }
         }
 
         fun containsInAnyOrder(vararg expected: Prop): Matcher<List<Prop>?> {
-            return object : BaseMatcher<List<Prop>>() {
-                var matchResult: PropMatchResult? = null
-
-                override fun describeTo(description: Description?) {
-                    describe(description, expected, matchResult)
-                }
-
-                override fun matches(actualValue: Any?): Boolean {
-                    @Suppress("UNCHECKED_CAST")
-                    val actual = actualValue as? List<Prop>
-                    val matchResult = PropMatching().containsAllIgnoringOrder(actual, expected.toList())
-                    this.matchResult = matchResult
-                    return matchResult.matches
-                }
+            return Matcher { actual ->
+                val matchResult = PropMatching().containsAllIgnoringOrder(actual, expected.toList())
+                MatcherResult(
+                    matchResult.matches,
+                    { describe(expected, matchResult) },
+                    { describe(expected, matchResult) }
+                )
             }
         }
 
         fun containsAtLeast(vararg expected: Prop): Matcher<List<Prop>?> {
-            return object : BaseMatcher<List<Prop>>() {
-                var matchResult: PropMatchResult? = null
-
-                override fun describeTo(description: Description?) {
-                    describe(description, expected, matchResult)
-                }
-
-                override fun matches(actualValue: Any?): Boolean {
-                    @Suppress("UNCHECKED_CAST")
-                    val actual = actualValue as? List<Prop>
-                    val matchResult = PropMatching().containsAtLeast(actual, expected.toList())
-                    this.matchResult = matchResult
-                    return matchResult.matches
-                }
+            return Matcher { actual ->
+                val matchResult = PropMatching().containsAtLeast(actual, expected.toList())
+                MatcherResult(
+                    matchResult.matches,
+                    { describe(expected, matchResult) },
+                    { describe(expected, matchResult) }
+                )
             }
         }
 

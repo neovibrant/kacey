@@ -1,15 +1,35 @@
 package com.neovibrant.kacey.matchers
 
-import com.neovibrant.kacey.Assertion.Companion.assertion
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.containsInAnyOrder
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.json
-import org.junit.Assert.assertThat
-import org.junit.Test
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.string.shouldContain
 
-class ContainsAllInAnyOrderMatcherTest {
-    @Test
-    fun `contains all in any order - incorrect order`() {
-        assertThat(
+class ContainsAllInAnyOrderMatcherTest : FunSpec({
+    test("contains all in any order - incorrect order") {
+        listOf(
+            json {
+                "id" To 123
+                "name" To "Mary"
+            },
+            json {
+                "id" To 456
+                "name" To "John"
+            },
+        ) should containsInAnyOrder(
+            json {
+                "name" To "John"
+            },
+            json {
+                "name" To "Mary"
+            },
+        )
+    }
+
+    test("contains all in any order - incorrect value") {
+        val exception = shouldThrow<AssertionError> {
             listOf(
                 json {
                     "id" To 123
@@ -17,74 +37,43 @@ class ContainsAllInAnyOrderMatcherTest {
                 },
                 json {
                     "id" To 456
-                    "name" To "John"
+                    "name" To "Jake"
                 },
-            ),
-            containsInAnyOrder(
+            ) should containsInAnyOrder(
                 json {
                     "name" To "John"
                 },
                 json {
                     "name" To "Mary"
                 },
-            ),
-        )
+            )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"[0]\""
+        exception.message shouldContain "Expected value: \"{name=John}\""
+        exception.message shouldContain "Actual value: \"<Nothing that matched in any order>\""
     }
 
-    @Test
-    fun `contains all in any order - incorrect value`() {
-        assertion {
-            assertThat(
-                listOf(
-                    json {
-                        "id" To 123
-                        "name" To "Mary"
-                    },
-                    json {
-                        "id" To 456
-                        "name" To "Jake"
-                    },
-                ),
-                containsInAnyOrder(
-                    json {
-                        "name" To "John"
-                    },
-                    json {
-                        "name" To "Mary"
-                    },
-                ),
+    test("contains all in any order - missing item") {
+        val exception = shouldThrow<AssertionError> {
+            listOf(
+                json {
+                    "id" To 123
+                    "name" To "Mary"
+                },
+                json {
+                    "id" To 456
+                    "name" To "Jake"
+                },
+            ) should containsInAnyOrder(
+                json {
+                    "name" To "Mary"
+                },
             )
-        }.failsWith(
-            "Matching failed for key: \"[0]\"",
-            "Expected value: <{name=John}>",
-            "Actual value: \"<Nothing that matched in any order>\"",
-        )
-    }
+        }
 
-    @Test
-    fun `contains all in any order - missing item`() {
-        assertion {
-            assertThat(
-                listOf(
-                    json {
-                        "id" To 123
-                        "name" To "Mary"
-                    },
-                    json {
-                        "id" To 456
-                        "name" To "Jake"
-                    },
-                ),
-                containsInAnyOrder(
-                    json {
-                        "name" To "Mary"
-                    },
-                ),
-            )
-        }.failsWith(
-            "Matching failed due to mis-matching array SIZE at path: \"(root of object)\"",
-            "Expected size: <1>",
-            "Actual size: <2>",
-        )
+        exception.message shouldContain "Matching failed due to mis-matching array SIZE at path: \"(root of object)\""
+        exception.message shouldContain "Expected size: <1>"
+        exception.message shouldContain "Actual size: <2>"
     }
-}
+})

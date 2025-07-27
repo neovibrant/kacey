@@ -1,150 +1,143 @@
 package com.neovibrant.kacey.matchers
 
-import com.neovibrant.kacey.Assertion.Companion.assertion
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.containsProp
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.json
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Nothing.nothing
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Something.something
-import org.junit.Assert.assertThat
-import org.junit.Test
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.string.shouldContain
 
-class ContainsPropMatcherTest {
-    @Test
-    fun `explanatory error message - root property`() {
-        assertion {
-            assertThat(
+class ContainsPropMatcherTest : FunSpec({
+    test("explanatory error message - root property") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+                "name" To "Jim"
+                "nested object" To
+                    json {
+                        "location" To "Up north"
+                    }
+            } should containsProp(
                 json {
-                    "id" To "123"
-                    "name" To "Jim"
+                    "id" To something
+                    "name" To "Jane"
                     "nested object" To
                         json {
                             "location" To "Up north"
                         }
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        "name" To "Jane"
-                        "nested object" To
-                            json {
-                                "location" To "Up north"
-                            }
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed for key: \"name\"",
-            "Expected value: \"Jane\"",
-            "Actual value: \"Jim\"",
-        )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"name\""
+        exception.message shouldContain "Expected value: \"Jane\""
+        exception.message shouldContain "Actual value: \"Jim\""
     }
 
-    @Test
-    fun `explanatory error message - nested object`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - nested object") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+                "nested object" To
+                    json {
+                        "name" To "Jim"
+                        "location" To "Up north"
+                    }
+            } should containsProp(
                 json {
-                    "id" To "123"
+                    "id" To something
                     "nested object" To
                         json {
                             "name" To "Jim"
-                            "location" To "Up north"
+                            "location" To "Down south"
                         }
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        "nested object" To
-                            json {
-                                "name" To "Jim"
-                                "location" To "Down south"
-                            }
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed for key: \"'nested object'.location\"",
-            "Expected value: \"Down south\"",
-            "Actual value: \"Up north\"",
-        )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"'nested object'.location\""
+        exception.message shouldContain "Expected value: \"Down south\""
+        exception.message shouldContain "Actual value: \"Up north\""
     }
 
-    @Test
-    fun `explanatory error message - unexpected field`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - unexpected field") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "unexpected" To "123"
+            } should containsProp(
                 json {
-                    "unexpected" To "123"
+                    "unexpected" To nothing
                 },
-                containsProp(
-                    json {
-                        "unexpected" To nothing
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed for key: \"unexpected\"",
-            "Expected value: <nothing>",
-            "Actual value: \"123\"",
-        )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"unexpected\""
+        exception.message shouldContain "Expected value: \"nothing\""
+        exception.message shouldContain "Actual value: \"123\""
     }
 
-    @Test
-    fun `explanatory error message - extra props`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - extra props") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+                "expectedExtra" To "extra"
+            } should containsProp(
                 json {
-                    "id" To "123"
-                    "expectedExtra" To "extra"
+                    "id" To something
+                    noExtraProps()
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        noExtraProps()
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed due to EXTRA PROP(s) at path: \"(root of object)\"",
-            "Extra properties: <[expectedExtra]>",
-        )
+        }
+
+        exception.message shouldContain "Matching failed due to EXTRA PROP(s) at path: \"(root of object)\""
+        exception.message shouldContain "Extra properties: [expectedExtra]"
     }
 
-    @Test
-    fun `explanatory error message - extra props is nested`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - extra props is nested") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+                "nestedObject" To
+                    json {
+                        "expected" To 1
+                        "expectedExtra" To "extra"
+                    }
+            } should containsProp(
                 json {
-                    "id" To "123"
+                    "id" To something
                     "nestedObject" To
                         json {
                             "expected" To 1
-                            "expectedExtra" To "extra"
                         }
+                    noExtraProps()
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        "nestedObject" To
-                            json {
-                                "expected" To 1
-                            }
-                        noExtraProps()
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed due to EXTRA PROP(s) at path: \"nestedObject\"",
-            "Extra properties: <[expectedExtra]>",
-        )
+        }
+
+        exception.message shouldContain "Matching failed due to EXTRA PROP(s) at path: \"nestedObject\""
+        exception.message shouldContain "Extra properties: [expectedExtra]"
     }
 
-    @Test
-    fun `explanatory error message - nested array`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - nested array") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+                "nested array" To
+                    listOf(
+                        json {
+                            "name" To "Marry"
+                            "location" To "West"
+                        },
+                        json {
+                            "name" To "Jim"
+                            "location" To "Up north"
+                        },
+                    )
+            } should containsProp(
                 json {
-                    "id" To "123"
+                    "id" To something
                     "nested array" To
                         listOf(
                             json {
@@ -153,100 +146,76 @@ class ContainsPropMatcherTest {
                             },
                             json {
                                 "name" To "Jim"
-                                "location" To "Up north"
+                                "location" To "Down south"
                             },
                         )
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        "nested array" To
-                            listOf(
-                                json {
-                                    "name" To "Marry"
-                                    "location" To "West"
-                                },
-                                json {
-                                    "name" To "Jim"
-                                    "location" To "Down south"
-                                },
-                            )
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed for key: \"'nested array'.[1].location\"",
-            "Expected value: \"Down south\"",
-            "Actual value: \"Up north\"",
-        )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"'nested array'.[1].location\""
+        exception.message shouldContain "Expected value: \"Down south\""
+        exception.message shouldContain "Actual value: \"Up north\""
     }
 
-    @Test
-    fun `explanatory error message - nested array incomplete`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - nested array incomplete") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+                "nested array" To
+                    listOf(
+                        json {
+                            "name" To "Marry"
+                            "location" To "West"
+                        },
+                    )
+            } should containsProp(
                 json {
-                    "id" To "123"
+                    "id" To something
                     "nested array" To
                         listOf(
                             json {
                                 "name" To "Marry"
                                 "location" To "West"
                             },
+                            json {
+                                "name" To "Jim"
+                                "location" To "Down south"
+                            },
                         )
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        "nested array" To
-                            listOf(
-                                json {
-                                    "name" To "Marry"
-                                    "location" To "West"
-                                },
-                                json {
-                                    "name" To "Jim"
-                                    "location" To "Down south"
-                                },
-                            )
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed due to mis-matching array SIZE at path: \"'nested array'\"",
-            "Expected size: <2>",
-            "Actual size: <1>",
-        )
+        }
+
+        exception.message shouldContain "Matching failed due to mis-matching array SIZE at path: \"'nested array'\""
+        exception.message shouldContain "Expected size: <2>"
+        exception.message shouldContain "Actual size: <1>"
     }
 
-    @Test
-    fun `explanatory error message - nested array is null`() {
-        assertion {
-            assertThat(
+    test("explanatory error message - nested array is null") {
+        val exception = shouldThrow<AssertionError> {
+            json {
+                "id" To "123"
+            } should containsProp(
                 json {
-                    "id" To "123"
+                    "id" To something
+                    "nonExistingArray" To
+                        listOf(
+                            json {
+                                "name" To "Marry"
+                                "location" To "West"
+                            },
+                            json {
+                                "name" To "Jim"
+                                "location" To "Down south"
+                            },
+                        )
                 },
-                containsProp(
-                    json {
-                        "id" To something
-                        "nonExistingArray" To
-                            listOf(
-                                json {
-                                    "name" To "Marry"
-                                    "location" To "West"
-                                },
-                                json {
-                                    "name" To "Jim"
-                                    "location" To "Down south"
-                                },
-                            )
-                    },
-                ),
             )
-        }.failsWith(
-            "Matching failed for key: \"nonExistingArray\"",
-            "Expected value: <[{name=Marry, location=West}, {name=Jim, location=Down south}]>",
-            "Actual value: null",
-        )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"nonExistingArray\""
+        exception.message shouldContain "Expected value: \"[{name=Marry, location=West}, {name=Jim, location=Down south}]\""
+        exception.message shouldContain "Actual value: \"null\""
     }
-}
+})

@@ -1,114 +1,99 @@
 package com.neovibrant.kacey.matchers
 
-import com.neovibrant.kacey.Assertion.Companion.assertion
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.contains
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.json
-import org.junit.Assert.assertThat
-import org.junit.Test
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.string.shouldContain
 
-class ContainsAllInOrderMatcherTest {
-    @Test
-    fun `contains all in order`() {
-        assertThat(
+class ContainsAllInOrderMatcherTest : FunSpec({
+    test("contains all in order") {
+        listOf(
+            json {
+                "id" To 123
+            },
+            json {
+                "id" To 456
+            },
+        ) should contains(
+            json {
+                "id" To 123
+            },
+            json {
+                "id" To 456
+            },
+        )
+    }
+
+    test("contains all in order - missing item") {
+        val exception = shouldThrow<AssertionError> {
             listOf(
                 json {
                     "id" To 123
                 },
-                json {
-                    "id" To 456
-                },
-            ),
-            contains(
+            ) should contains(
                 json {
                     "id" To 123
                 },
                 json {
                     "id" To 456
                 },
-            ),
-        )
+            )
+        }
+
+        exception.message shouldContain "Matching failed due to mis-matching array SIZE at path: \"(root of object)\""
+        exception.message shouldContain "Expected size: <2>"
+        exception.message shouldContain "Actual size: <1>"
     }
 
-    @Test
-    fun `contains all in order - missing item`() {
-        assertion {
-            assertThat(
-                listOf(
-                    json {
-                        "id" To 123
-                    },
-                ),
-                contains(
-                    json {
-                        "id" To 123
-                    },
-                    json {
-                        "id" To 456
-                    },
-                ),
+    test("contains all in order - property not matching") {
+        val exception = shouldThrow<AssertionError> {
+            listOf(
+                json {
+                    "id" To 123
+                    "name" To "Mary"
+                },
+                json {
+                    "id" To 456
+                    "name" To "John"
+                },
+            ) should contains(
+                json {
+                    "name" To "Mary"
+                },
+                json {
+                    "name" To "Jake"
+                },
             )
-        }.failsWith(
-            "Matching failed due to mis-matching array SIZE at path: \"(root of object)\"",
-            "Expected size: <2>",
-            "Actual size: <1>",
-        )
+        }
+
+        exception.message shouldContain "Matching failed for key: \"[1].name\""
+        exception.message shouldContain "Expected value: \"Jake\""
+        exception.message shouldContain "Actual value: \"John\""
     }
 
-    @Test
-    fun `contains all in order - property not matching`() {
-        assertion {
-            assertThat(
-                listOf(
-                    json {
-                        "id" To 123
-                        "name" To "Mary"
-                    },
-                    json {
-                        "id" To 456
-                        "name" To "John"
-                    },
-                ),
-                contains(
-                    json {
-                        "name" To "Mary"
-                    },
-                    json {
-                        "name" To "Jake"
-                    },
-                ),
+    test("contains all in order - incorrect order") {
+        val exception = shouldThrow<AssertionError> {
+            listOf(
+                json {
+                    "id" To 123
+                    "name" To "Mary"
+                },
+                json {
+                    "id" To 456
+                    "name" To "John"
+                },
+            ) should contains(
+                json {
+                    "name" To "John"
+                },
+                json {
+                    "name" To "Mary"
+                },
             )
-        }.failsWith(
-            "Matching failed for key: \"[1].name\"",
-            "Expected value: \"Jake\"",
-            "Actual value: \"John\"",
-        )
-    }
+        }
 
-    @Test
-    fun `contains all in order - incorrect order`() {
-        assertion {
-            assertThat(
-                listOf(
-                    json {
-                        "id" To 123
-                        "name" To "Mary"
-                    },
-                    json {
-                        "id" To 456
-                        "name" To "John"
-                    },
-                ),
-                contains(
-                    json {
-                        "name" To "John"
-                    },
-                    json {
-                        "name" To "Mary"
-                    },
-                ),
-            )
-        }.failsWith(
-            "Matching failed due to WRONG ORDER of values at path: \"(root of object)\"",
-        )
+        exception.message shouldContain "Matching failed due to WRONG ORDER of values at path: \"(root of object)\""
     }
-}
+})
