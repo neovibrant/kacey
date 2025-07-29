@@ -1,7 +1,7 @@
 package com.neovibrant.kacey
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Assert.fail
+import org.junit.jupiter.api.Assertions.fail
 
 class Assertion(
     val assertion: () -> Unit,

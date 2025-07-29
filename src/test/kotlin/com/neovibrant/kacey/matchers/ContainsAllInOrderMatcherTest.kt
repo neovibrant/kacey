@@ -3,8 +3,8 @@ package com.neovibrant.kacey.matchers
 import com.neovibrant.kacey.Assertion.Companion.assertion
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.contains
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.json
-import org.junit.Assert.assertThat
-import org.junit.Test
+import org.hamcrest.MatcherAssert.assertThat
+import org.junit.jupiter.api.Test
 
 class ContainsAllInOrderMatcherTest {
     @Test
