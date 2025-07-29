@@ -1,54 +1,86 @@
 package com.neovibrant.kacey.matchers
 
+import org.hamcrest.Description
+
 internal object Descriptioner {
     internal fun describe(
+        description: Description?,
         expected: Any?,
         matchResult: PropMatchResult?,
-    ): String {
-        val description = StringBuilder()
-
+    ) {
         if (matchResult != null) {
-            description.append("to match expectation, but instead:\n\n***** Failure detail *****\n")
+            description
+                ?.appendText("to match expectation, but instead:\n\n***** Failure detail *****\n")
             if (matchResult.noExtraOptionsFailure) {
-                description.append(describeNoExtraOptions(matchResult))
+                describeNoExtraOptions(description, matchResult)
             } else if (matchResult.arraySizeMismatch) {
-                description.append(describeArraySizeMismatch(matchResult))
+                describeArraySizeMismatch(description, matchResult)
             } else if (matchResult.wrongOrder) {
-                description.append(describeWrongOrder(matchResult))
+                describeWrongOrder(description, matchResult)
             } else {
-                description.append(describeFailure(matchResult))
+                describeFailure(description, matchResult)
             }
-            description.append("***** End of detail *****\n")
+            description
+                ?.appendText("***** End of detail *****\n")
         }
-        description.append("\nFull expectation: $expected")
-
-        return description.toString()
+        description
+            ?.appendText("\nFull expectation: ")
+            ?.appendValue(expected)
     }
 
     private fun describeNoExtraOptions(
+        description: Description?,
         matchResult: PropMatchResult,
-    ): String {
-        val path = matchResult.options.path.takeIf { it.isNotBlank() } ?: "(root of object)"
-        return "\tMatching failed due to EXTRA PROP(s) at path: \"$path\"\n\tExtra properties: ${matchResult.actual}\n"
+    ) {
+        description
+            ?.appendText("\tMatching failed due to EXTRA PROP(s) at path: ")
+            ?.appendValue(
+                matchResult.options.path.takeIf { it.isNotBlank() }
+                    ?: "(root of object)",
+            )?.appendText("\n\tExtra properties: ")
+            ?.appendValue(matchResult.actual)
+            ?.appendText("\n")
     }
 
     private fun describeArraySizeMismatch(
+        description: Description?,
         matchResult: PropMatchResult,
-    ): String {
-        val path = matchResult.options.path.takeIf { it.isNotBlank() } ?: "(root of object)"
-        return "\tMatching failed due to mis-matching array SIZE at path: \"$path\"\n\tExpected size: <${matchResult.expected}>\n\tActual size: <${matchResult.actual}>\n"
+    ) {
+        description
+            ?.appendText("\tMatching failed due to mis-matching array SIZE at path: ")
+            ?.appendValue(
+                matchResult.options.path.takeIf { it.isNotBlank() }
+                    ?: "(root of object)",
+            )?.appendText("\n\tExpected size: ")
+            ?.appendValue(matchResult.expected)
+            ?.appendText("\n\tActual size: ")
+            ?.appendValue(matchResult.actual)
+            ?.appendText("\n")
     }
 
     private fun describeWrongOrder(
+        description: Description?,
         matchResult: PropMatchResult,
-    ): String {
-        val path = matchResult.options.path.takeIf { it.isNotBlank() } ?: "(root of object)"
-        return "\tMatching failed due to WRONG ORDER of values at path: \"$path\"\n"
+    ) {
+        description
+            ?.appendText("\tMatching failed due to WRONG ORDER of values at path: ")
+            ?.appendValue(
+                matchResult.options.path.takeIf { it.isNotBlank() }
+                    ?: "(root of object)",
+            )?.appendText("\n")
     }
 
     private fun describeFailure(
+        description: Description?,
         matchResult: PropMatchResult,
-    ): String {
-        return "\tMatching failed for key: \"${matchResult.options.path}\"\n\tExpected value: \"${matchResult.expected}\"\n\tActual value: \"${matchResult.actual}\"\n"
+    ) {
+        description
+            ?.appendText("\tMatching failed for key: ")
+            ?.appendValue(matchResult.options.path)
+            ?.appendText("\n\tExpected value: ")
+            ?.appendValue(matchResult.expected)
+            ?.appendText("\n\tActual value: ")
+            ?.appendValue(matchResult.actual)
+            ?.appendText("\n")
     }
 }

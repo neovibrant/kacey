@@ -1,52 +1,39 @@
 package com.neovibrant.kacey.matchers
 
+import com.neovibrant.kacey.Assertion.Companion.assertion
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.containsAtLeast
 import com.neovibrant.kacey.matchers.ApiJsonMatcher.Companion.json
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.should
-import io.kotest.matchers.string.shouldContain
+import org.junit.Assert.assertThat
+import org.junit.Test
 
-class ContainsAtLeastMatcherTest : FunSpec({
-    test("contains all in any order") {
-        listOf(
-            json {
-                "id" To 123
-                "name" To "Mary"
-            },
-            json {
-                "id" To 456
-                "name" To "John"
-            },
-        ) should containsAtLeast(
-            json {
-                "name" To "John"
-            },
-            json {
-                "name" To "Mary"
-            },
+class ContainsAtLeastMatcherTest {
+    @Test
+    fun `contains all in any order`() {
+        assertThat(
+            listOf(
+                json {
+                    "id" To 123
+                    "name" To "Mary"
+                },
+                json {
+                    "id" To 456
+                    "name" To "John"
+                },
+            ),
+            containsAtLeast(
+                json {
+                    "name" To "John"
+                },
+                json {
+                    "name" To "Mary"
+                },
+            ),
         )
     }
 
-    test("contains all in any order - missing item") {
-        listOf(
-            json {
-                "id" To 123
-                "name" To "Mary"
-            },
-            json {
-                "id" To 456
-                "name" To "Jake"
-            },
-        ) should containsAtLeast(
-            json {
-                "name" To "Mary"
-            },
-        )
-    }
-
-    test("contains all in any order - incorrect value") {
-        val exception = shouldThrow<AssertionError> {
+    @Test
+    fun `contains all in any order - missing item`() {
+        assertThat(
             listOf(
                 json {
                     "id" To 123
@@ -56,15 +43,39 @@ class ContainsAtLeastMatcherTest : FunSpec({
                     "id" To 456
                     "name" To "Jake"
                 },
-            ) should containsAtLeast(
+            ),
+            containsAtLeast(
                 json {
-                    "name" To "John"
+                    "name" To "Mary"
                 },
-            )
-        }
-
-        exception.message shouldContain "Matching failed for key: \"[0]\""
-        exception.message shouldContain "Expected value: \"{name=John}\""
-        exception.message shouldContain "Actual value: \"<Nothing that matched in any order>\""
+            ),
+        )
     }
-})
+
+    @Test
+    fun `contains all in any order - incorrect value`() {
+        assertion {
+            assertThat(
+                listOf(
+                    json {
+                        "id" To 123
+                        "name" To "Mary"
+                    },
+                    json {
+                        "id" To 456
+                        "name" To "Jake"
+                    },
+                ),
+                containsAtLeast(
+                    json {
+                        "name" To "John"
+                    },
+                ),
+            )
+        }.failsWith(
+            "Matching failed for key: \"[0]\"",
+            "Expected value: <{name=John}>",
+            "Actual value: \"<Nothing that matched in any order>\"",
+        )
+    }
+}
